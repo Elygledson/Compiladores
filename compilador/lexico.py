@@ -1,8 +1,6 @@
-from calendar import c
 from token import Token
 
 class Lexico:
-
     def __init__(self, filename) -> None:
         self.__content = self.readFile(filename)
         self.__state = 0
@@ -21,64 +19,57 @@ class Lexico:
         return temp
 
     def getToken(self) -> Token:
-        current = None
+        current = self.__content[self.__position]
         while True:
-            if self.__isEOF(): 
-                self.__position += 1
-                token = self.__match(current)
-                print(token)
+            if not self.__isEOF():
+                current = self.__content[self.__position]
+
+            if self.__isEOF() and self.__state == 0: 
                 break
 
-            current = self.__next()
-            token = self.__match(current)
-            if token != None:
-                print(token)
+            self.__match(current)
+            self.__next()
+            
 
     def __match(self, current: str) -> Token:
         match self.__state:
             case 0:
-                self.__nextpostion = self.__position-1
-
-                if self.__isNumber(current):
-                    self.__state = 3
-                elif self.__isChar(current):
-                    self.__state = 1
-                elif self.__isOperator(current):
-                    self.__state = 5
-                else:
-                    print("UNRECOGNIZED SYMBOL")
-                return None
-            case 1:
-                if not self.__isChar(current) and not self.__isNumber(current) or self.__isEOF():
-                    self.__state = 2
-                else:
-                    self.__state = 1
-                return None
-            case 2:
-                return self.__createToken(Token.TK_IDENTIFIER)
-            case 3:
                 if self.__isChar(current):
-                    print('ERROR', current, self.__content[self.__nextpostion:self.__position])
-                
-                if not self.__isChar(current) and not self.__isNumber(current):
+                    self.__state = 1
+                elif self.__isNumber(current):
+                    self.__state = 2
+                elif self.__isOperator(current):
+                    self.__state = 3
+                elif self.__other(current):
                     self.__state = 4
+            case 1:
+                if not self.__isChar(current) and not self.__isNumber(current):
+                    self.__createToken(Token.TK_IDENTIFIER)
+            case 2:
+                if not self.__isChar(current) and not self.__isNumber(current):
+                    self.__createToken(Token.TK_NUMBER)
+            case 3:
+                if not self.__isOperator(current):
+                    self.__createToken(Token.TK_OPERATOR)
             case 4:
-                return self.__createToken(Token.TK_NUMBER)
+                self.__createToken(Token.TK_OTHER)
+            
     
     def __createToken(self, type):
         token = Token()
         token.setType(type)
-        token.setText(self.__content[self.__nextpostion:self.__position])
+        token.setText(''.join(self.__content[self.__nextpostion:self.__position]).strip())
 
+        self.__nextpostion = self.__position
+        self.__back()
         self.__state = 0
-        return token
+        print(token)
 
     def __next(self) -> str:
         self.__position += 1
-        return self.__content[self.__position]
 
     def __isEOF(self) -> bool:
-        return self.__position+1 == len(self.__content)
+        return self.__position == len(self.__content)
 
     def __isChar(self, c: str) -> bool:
         return (c >= 'a' and c <= 'z') or (c >= 'A' and c <= 'Z')
@@ -91,6 +82,12 @@ class Lexico:
 
     def __ignore(self, c: str) -> bool:
         return c == '\t' or c == '\n' or c == ' ' or c == '\r'
+    
+    def __other(self, c: str) -> bool:
+        return c == ';' or c =='(' or c == ')' or c == '{' or c == '}'
+    
+    def __back(self) -> None:
+        self.__position -= 1
 
 
 test = Lexico("file.txt")
