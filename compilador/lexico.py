@@ -52,7 +52,6 @@ class Lexico:
             
 
     def __match(self, current: str) -> Token:
-        # print("opa", current, self.__position)
         match self.__state:
             case 0:
                 if self.symbols_lex.isChar(current):
@@ -63,29 +62,45 @@ class Lexico:
                     self.__state = 3
                 elif self.symbols_lex.other(current):
                     self.__state = 4
+                elif current == '"':
+                    self.__state = 6
             case 1:
                 if not self.symbols_lex.isChar(current) and not self.symbols_lex.isNumber(current):
-                    self.__createToken(Token.TK_IDENTIFIER)
+                    word = ''.join(self.__content[self.__column:self.__position]).strip()
+                    if word in Token.reservedWord:
+                        self.__createToken(Token.reservedWord[word])
+                    else:
+                        self.__createToken(Token.TK_IDENTIFIER)
             case 2:
-                if not self.symbols_lex.isChar(current) and not self.symbols_lex.isNumber(current):
+                if(current == '.'):
+                    self.__state = 5
+                elif self.symbols_lex.isChar(current):
+                    self.__next()
+                    self.__createToken(Token.TK_ERROR) 
+                elif not self.symbols_lex.isNumber(current):
                     self.__createToken(Token.TK_NUMBER)
+                
             case 3:
                 if not self.symbols_lex.isOperator(current):
                     self.__createToken(Token.TK_OPERATOR)
             case 4:
                 self.__createToken(Token.TK_OTHER)
-            
-    
+            case 5: 
+                if self.symbols_lex.isOperator(current) or self.symbols_lex.ignore(current) or current == ';':
+                    self.__createToken(Token.TK_FLOAT)
+                elif  not self.symbols_lex.isNumber(current):
+                    self.__next()
+                    self.__createToken(Token.TK_ERROR)
+            case 6:
+                if current == '"':
+                   self.__next()
+                   self.__createToken(Token.TK_STRING)
+                    
+
     def __createToken(self, type):
-        token = Token()
-        token.setType(type)
-        token.setLexema(''.join(self.__content[self.__column:self.__position]).strip())
-        token.setLine(self.__line+1)
-        token.setColumn(self.__column+1)
-
+        word = ''.join(self.__content[self.__column:self.__position]).strip()
+        token = Token(type,word,self.__line+1,self.__column+1)
         print(token)
-
-
         if not self.symbols_lex.ignore(self.__content[self.__position]):
             self.__column = self.__position
         else:
@@ -106,3 +121,4 @@ class Lexico:
 
 test = Lexico("file.txt")
 test.readLines()
+
