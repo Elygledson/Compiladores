@@ -14,5 +14,5 @@ class Symbols:
         return c == '\t' or c == '\n' or c == ' ' or c == '\r' or c == '\t' or c == '\0'
     
     def other(self, c: str) -> bool:
-        return c =='(' or c == ')' or c == '{' or c == '}' or c == '[' or c == ']' or c == '.' or c == ','
+        return c =='(' or c == ')' or c == '{' or c == '}' or c == '[' or c == ']' or c == '.' or c == ',' or  c == ';'
 
