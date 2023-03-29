@@ -86,7 +86,7 @@ class Lexico:
             case 2:
                 if self.symbols_lex.isNumber(current):
                     self.__state = 2
-                elif current == ',':
+                elif current == '.':
                     self.__state = 6
                 else:
                     self.createToken(2)
@@ -125,12 +125,9 @@ class Lexico:
                     self.back()
 
             case 8:
-                if current == "#":
-                    self.__state = 8
-                else:
-                    self.createToken(9)
-                    if not self.symbols_lex.ignore(current):
-                        self.back()
+                self.createToken(9)
+                if not self.symbols_lex.ignore(current):
+                    self.back()
 
             case 9:
                 if self.symbols_lex.isRelacional(current):

@@ -16,9 +16,11 @@ function somaPilha(p,a,c: pilha of real; c,d,e: pilha of integer): real;
 
 begin
     p := somaPilha(p);
-    conc:= concatena(p,g);
+    p := # 1,2,3,4,5 #
+    conc:= concatena(p,# 1,2,3,4,5 #);
+    conc:= concatena(p,##);
     p := inverte(p);
-    a := 0,342131231;
+    a := 0.342131231;
     read(x, y);
     write(z);
     if (>(a, 10)) 
